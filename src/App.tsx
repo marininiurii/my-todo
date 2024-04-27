@@ -1,26 +1,70 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import styles from "./App.module.css";
+import { Header } from "./components/Header/Header";
+import { TodoPanel } from "./components/TodoPanel/TodoPanel";
+import { TodoList } from "./components/TodoList/TodoList";
 
-function App() {
+const DEFAULT_TODO_LIST = [
+  { id: 1, name: "Покупки", description: "Купить помидоры", checked: false },
+];
+
+export const App = () => {
+  const [todoIdForEdit, setTodoIdForEdit] = React.useState<number | null>(null);
+  const [todos, setTodos] = React.useState(DEFAULT_TODO_LIST);
+
+  const selectTodoIdForEdit = (id: Todo["id"]) => {
+    setTodoIdForEdit(id);
+  };
+
+  const deleteTodo = (id: Todo["id"]) => {
+    const deletedTodo = todos.filter((todo) => todo.id !== id);
+    setTodos(deletedTodo);
+  };
+
+  const addTodo = ({ name, description }: Omit<Todo, "id" | "checked">) => {
+    const newId = todos.length > 0 ? todos[todos.length - 1].id + 1 : 1;
+    const addedTodo = [
+      ...todos,
+      { id: newId, description, name, checked: false },
+    ];
+    setTodos(addedTodo);
+  };
+
+  const checkTodo = (id: Todo["id"]) => {
+    const checkedTodo = todos.map((todo) => {
+      if (todo.id === id) {
+        return { ...todo, checked: !todo.checked };
+      }
+      return todo;
+    });
+    setTodos(checkedTodo);
+  };
+
+  const changeTodo = ({ name, description }: Omit<Todo, "id" | "checked">) => {
+    const changedTodo = todos.map((todo) => {
+      if (todo.id === todoIdForEdit) {
+        return { ...todo, name, description };
+      }
+      return todo;
+    });
+    setTodos(changedTodo);
+    setTodoIdForEdit(null);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className={styles.app_container}>
+      <div className={styles.container}>
+        <Header todoCount={todos.length} />
+        <TodoPanel mode="add" addTodo={addTodo} />
+        <TodoList
+          todoIdForEdit={todoIdForEdit}
+          todos={todos}
+          deleteTodo={deleteTodo}
+          checkTodo={checkTodo}
+          selectTodoIdForEdit={selectTodoIdForEdit}
+          changeTodo={changeTodo}
+        />
+      </div>
     </div>
   );
-}
-
-export default App;
+};
